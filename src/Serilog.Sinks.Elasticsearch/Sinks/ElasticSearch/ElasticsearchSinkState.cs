@@ -67,11 +67,7 @@ namespace Serilog.Sinks.Elasticsearch
 
             _options = options;
 
-            Func<ConnectionConfiguration, IElasticsearchSerializer> serializerFactory = null;
-            if (options.Serializer != null)
-                serializerFactory = s => options.Serializer;
-
-            var configuration = new ConnectionConfiguration(options.ConnectionPool, options.Connection, serializerFactory)
+            var configuration = new ConnectionConfiguration(options.ConnectionPool, options.Connection)
                 .RequestTimeout(options.ConnectionTimeout);
 
             if (options.ModifyConnectionSettings != null)
@@ -134,11 +130,12 @@ namespace Serilog.Sinks.Elasticsearch
                     }
                 }
 
-                var result = _client.IndicesPutTemplateForAll<DynamicResponse>(_templateName, GetTemplateData());
+                var result = _client.IndicesPutTemplateForAll<StringResponse>(_templateName, GetTemplateData());
 
                 if (!result.Success)
                 {
-                    SelfLog.WriteLine("Unable to create the template. {0}", result.ServerError);
+                    result.TryGetServerError(out var setServerError);
+                    SelfLog.WriteLine("Unable to create the template. {0}", setServerError);
 
                     if (_options.RegisterTemplateFailure == RegisterTemplateRecovery.FailSink)
                         throw new Exception($"Unable to create the template named {_templateName}.", result.OriginalException);
@@ -160,7 +157,7 @@ namespace Serilog.Sinks.Elasticsearch
             }
         }
 
-        private object GetTemplateData()
+        private PostData GetTemplateData()
         {
             if (_options.GetTemplateContent != null)
                 return _options.GetTemplateContent();
@@ -176,10 +173,10 @@ namespace Serilog.Sinks.Elasticsearch
             if (_options.NumberOfReplicas.HasValue)
                 settings.Add("number_of_replicas", _options.NumberOfReplicas.Value.ToString());
 
-            return ElasticsearchTemplateProvider.GetTemplate(
+            return PostData.Serializable(ElasticsearchTemplateProvider.GetTemplate(
                 settings,
                 _templateMatchString,
-                _options.AutoRegisterTemplateVersion);
+                _options.AutoRegisterTemplateVersion));
 
         }
     }

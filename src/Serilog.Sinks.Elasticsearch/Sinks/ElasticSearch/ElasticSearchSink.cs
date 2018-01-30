@@ -53,7 +53,7 @@ namespace Serilog.Sinks.Elasticsearch
         /// </remarks>
         protected override void EmitBatch(IEnumerable<LogEvent> events)
         {
-            var result = this.EmitBatchChecked<DynamicResponse>(events);
+            var result = this.EmitBatchChecked(events);
 
             // Handle the results from ES, check if there are any errors.
             if (result.Success && result.Body?["errors"] == true)
@@ -123,7 +123,7 @@ namespace Serilog.Sinks.Elasticsearch
         /// </summary>
         /// <param name="events">The events to emit.</param>
         /// <returns>Response from Elasticsearch</returns>
-        protected virtual ElasticsearchResponse<T> EmitBatchChecked<T>(IEnumerable<LogEvent> events) where T : class
+        protected virtual DynamicResponse EmitBatchChecked(IEnumerable<LogEvent> events)
         {
             // ReSharper disable PossibleMultipleEnumeration
             if (events == null || !events.Any())
@@ -157,13 +157,19 @@ namespace Serilog.Sinks.Elasticsearch
                     _state.Formatter.Format(e, sw);
                     payload.Add(sw.ToString());
                 }
-                return _state.Client.Bulk<T>(payload);
+                return _state.Client.Bulk<DynamicResponse>(PostData.MultiJson(payload));
             }
             catch (Exception ex)
             {
                 HandleException(ex, events);
 
-                return new ElasticsearchResponse<T>(ex);
+                return new DynamicResponse
+                {
+                    ApiCall = new ApiCallDetails
+                    {
+                        OriginalException = ex
+                    }
+                };
             }
         }
 

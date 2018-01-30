@@ -56,7 +56,7 @@ namespace Serilog.Sinks.Elasticsearch
         /// When using the <see cref="AutoRegisterTemplate"/> feature, this allows you to override the default template content.
         /// If not provided, a default template that is optimized to deal with Serilog events is used.
         /// </summary>
-        public Func<object> GetTemplateContent { get; set; }
+        public Func<PostData> GetTemplateContent { get; set; }
 
         /// <summary>
         /// When using the <see cref="AutoRegisterTemplate"/> feature, this allows you to overwrite the template in Elasticsearch if it already exists.

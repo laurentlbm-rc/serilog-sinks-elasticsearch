@@ -11,5 +11,5 @@ using System.Runtime.CompilerServices;
                                                        "94191652df5ac63cc40c77f3542f702bda692e6e8a9158353df189007a49da0f3cfd55eb250066" +
                                                        "b19485ec")]
 [assembly: AssemblyVersion("5.3.0.0")]
-[assembly: AssemblyInformationalVersion("5.3.0-unstable.32+Branch.dev.Sha.7e77498e8afaaec96b508de3e8ec6bd3891b3556")]
+[assembly: AssemblyInformationalVersion("5.7.0")]
 [assembly: AssemblyFileVersion("5.3.0.0")]
